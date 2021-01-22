@@ -6,19 +6,17 @@ const routes = [
     path: '/',
     name: 'Tasks',
     alias: '/tasks',
-    component: Tasks,
-    children: [
-      {
-        path: '/task/:id',
-        name: 'Task',
-        component: () =>
-          import(
-            /* webpackChunkName: "task" */
-            /* webpackMode: "lazy" */
-            '../views/Task'
-          )
-      }
-    ]
+    component: Tasks
+  },
+  {
+    path: '/task/:id',
+    name: 'Task',
+    component: () =>
+      import(
+        /* webpackChunkName: "task" */
+        /* webpackMode: "lazy" */
+        '../views/Task'
+      )
   },
   {
     path: '/new',

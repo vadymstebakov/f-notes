@@ -1,3 +1,11 @@
 export const PRIMARY = 'primary';
 export const DANGER = 'danger';
 export const WARNING = 'warning';
+export const TYPE_DONE = 'done';
+export const TYPE_ACTIVE = 'active';
+export const TYPE_PENDING = 'pending';
+export const TYPE_CANCELLED = 'cancelled';
+export const TEXT_DONE = 'Завершен';
+export const TEXT_ACTIVE = 'Активный';
+export const TEXT_PENDING = 'В работе';
+export const TEXT_CANCELLED = 'Отклонен';

@@ -1,8 +1,9 @@
-import { createStore } from 'vuex';
+import { createStore, createLogger } from 'vuex';
+import tasks from './modules/tasks';
 
 export default createStore({
-  state: {},
-  mutations: {},
-  actions: {},
-  modules: {}
+  plugins: [createLogger()],
+  modules: {
+    tasks
+  }
 });
