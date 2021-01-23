@@ -1,41 +1,32 @@
 <template>
-  <template v-if="haveTasks">
-    <h3 class="text-white">Всего активных задач: {{ activeTasks }}</h3>
-    <div class="card form-control">
-      <label>Фильтровать по статусу:</label>
-      <select @change="filterTasks">
-        <option v-for="option in options" :key="option.id" :value="option.value" :selected="option.value === selectedFilterType">{{ option.text }}</option>
-      </select>
-    </div>
-    <div class="card" v-for="task in tasks" :key="task.id">
-      <h2 class="card-title">
-        {{ task.title }}
-        <app-status :type="task.status.type">
-          {{ task.status.text }}
-        </app-status>
-      </h2>
-      <p>
-        <strong>
-          <small>
-            {{ task.date }}
-          </small>
-        </strong>
-      </p>
-      <router-link :to="`/task/${task.id}`" custom v-slot="{ navigate }">
-        <app-button :modifier="primary" @action="navigate">Посмотреть</app-button>
-      </router-link>
-    </div>
-    <h1 class="text-white center" v-if="isTouchSelect && !haveFilteredTasks">Задач пока нет</h1>
-  </template>
-  <h1 class="text-white center" v-else>Задач пока нет</h1>
+  <div v-if="loaded">
+    <template v-if="haveTasks">
+      <h3 class="text-white">Всего активных задач: {{ activeTasks }}</h3>
+      <the-filter :options="options" @filter-tasks="filterTasks"></the-filter>
+      <the-task-card :tasks="tasks"></the-task-card>
+      <h1 class="text-white center" v-if="isTouchSelect && !haveFilteredTasks">Задач пока нет</h1>
+    </template>
+    <h1 class="text-white center" v-else>Задач пока нет</h1>
+  </div>
+  <app-loader v-else></app-loader>
 </template>
 
 <script>
-import { inject, computed, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
-import { TYPE_DONE, TYPE_ACTIVE, TYPE_PENDING, TYPE_CANCELLED, TEXT_DONE, TEXT_ACTIVE, TEXT_PENDING, TEXT_CANCELLED } from '../helpers/constants';
-import AppStatus from '../components/UI/AppStatus';
-import AppButton from '../components/UI/AppButton';
+import {
+  TYPE_DONE,
+  TYPE_ACTIVE,
+  TYPE_PENDING,
+  TYPE_CANCELLED,
+  TEXT_DONE,
+  TEXT_ACTIVE,
+  TEXT_PENDING,
+  TEXT_CANCELLED
+} from '../helpers/constants';
+import TheFilter from '../components/TheFilter';
+import TheTaskCard from '../components/TheTaskCard';
+import AppLoader from '../components/UI/AppLoader';
 
 export default {
   setup: () => {
@@ -64,14 +55,12 @@ export default {
         value: TYPE_CANCELLED,
         id: 5,
         text: TEXT_CANCELLED
-      },
+      }
     ];
     const store = useStore();
     const isTouchSelect = ref(false);
 
-    const filterTasks = e => {
-      const type = e.target.value;
-
+    const filterTasks = type => {
       if (type === '') {
         store.commit('tasks/resetFilter');
         isTouchSelect.value = false;
@@ -80,13 +69,15 @@ export default {
       }
 
       store.dispatch('tasks/filterTasks', {
-        type,
+        type
       });
 
       isTouchSelect.value = true;
     };
 
-    const tasks = computed(() => store.getters['tasks/filteredTasks'] || store.getters['tasks/tasks']);
+    const tasks = computed(
+      () => store.getters['tasks/filteredTasks'] || store.getters['tasks/tasks']
+    );
 
     const haveTasks = computed(() => store.getters['tasks/haveTasks']);
 
@@ -94,20 +85,19 @@ export default {
 
     const activeTasks = computed(() => store.getters['tasks/activeTasks']);
 
-    const selectedFilterType = computed(() => store.getters['tasks/selectedFilterType']);
+    const loaded = computed(() => store.getters['tasks/loaded']);
 
     return {
-      primary: inject('primary'),
       tasks,
       haveTasks,
       haveFilteredTasks,
       activeTasks,
+      loaded,
       filterTasks,
       isTouchSelect,
-      options,
-      selectedFilterType,
+      options
     };
   },
-  components: { AppStatus, AppButton }
+  components: { TheFilter, TheTaskCard, AppLoader }
 };
 </script>

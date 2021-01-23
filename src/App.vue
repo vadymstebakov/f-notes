@@ -16,13 +16,7 @@ export default {
     const store = useStore();
 
     const getTasks = () => {
-      const tasks = localStorage.getItem('tasks');
-
-      if (!tasks) {
-        return;
-      }
-
-      store.dispatch('tasks/getTasks', JSON.parse(tasks));
+      store.dispatch('tasks/getTasks');
     };
     getTasks();
 

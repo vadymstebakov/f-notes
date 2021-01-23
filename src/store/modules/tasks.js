@@ -1,7 +1,13 @@
 import { TYPE_ACTIVE } from '../../helpers/constants';
+import { stateProcessor } from '../../helpers/stateProcessor';
+import { localStorageClient } from '../../shared/localStorageClient';
+import { sleep } from '../../helpers/utils';
+
+const client = stateProcessor(localStorageClient('tasks'));
 
 const state = {
   tasks: [],
+  loaded: true,
   filteredTasks: null,
   selectedFilterType: ''
 };
@@ -12,6 +18,12 @@ const mutations = {
   },
   addTasks: (state, payload) => {
     state.tasks = state.tasks.concat(payload);
+  },
+  enableLoader: state => {
+    state.loaded = false;
+  },
+  disableLoader: state => {
+    state.loaded = true;
   },
   changeTaskStatus: (state, payload) => {
     const { id, status } = payload;
@@ -40,15 +52,31 @@ const actions = {
     commit('addTask', payload);
     dispatch('saveTasks');
   },
-  saveTasks: ctx => {
-    const { state } = ctx;
-
-    localStorage.setItem('tasks', JSON.stringify(state.tasks));
+  saveTasks: async ctx => {
+    try {
+      const { state } = ctx;
+      await client.save(state.tasks);
+    } catch (error) {
+      console.error(error.message);
+    }
   },
-  getTasks: (ctx, payload) => {
+  getTasks: async ctx => {
     const { commit } = ctx;
 
-    commit('addTasks', payload);
+    try {
+      commit('enableLoader');
+      await sleep(1000);
+      const tasks = await client.get();
+
+      if (tasks) {
+        commit('addTasks', tasks);
+      }
+
+      commit('disableLoader');
+    } catch (error) {
+      commit('disableLoader');
+      console.error(error.message);
+    }
   },
   changeTaskStatus: (ctx, payload) => {
     const { commit } = ctx;
@@ -64,6 +92,7 @@ const actions = {
 
 const getters = {
   tasks: state => state.tasks,
+  loaded: state => state.loaded,
   filteredTasks: state => state.filteredTasks,
   haveTasks: (_, getters) => getters.tasks.length,
   haveFilteredTasks: (_, getters) => getters.filteredTasks && getters.filteredTasks.length,
